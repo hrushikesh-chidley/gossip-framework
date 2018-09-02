@@ -1,0 +1,14 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.disseration.project.2016ht13290</groupId>
+  <artifactId>monitoring-service-main</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging> 
+  <modules>
+  	<module>monitoring-service-commons</module>
+  	<module>monitoring-service-interface</module>
+  	<module>monitoring-service-ga</module>
+  	<module>monitoring-service-rma</module>
+  </modules>
+  
+</project>

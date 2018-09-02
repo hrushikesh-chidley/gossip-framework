@@ -1,0 +1,9 @@
+./target
+
+./monitoring-service-commons/target
+
+./monitoring-service-interface/target
+
+./monitoring-service-ga/target
+
+./monitoring-service-rma/target
