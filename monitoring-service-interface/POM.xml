@@ -9,4 +9,12 @@
   <artifactId>monitoring-service-interface</artifactId>
   <packaging>jar</packaging>  
   
+  <dependencies>
+  	<dependency>
+  		<groupId>${project.groupId}</groupId>
+  		<artifactId>monitoring-service-commons</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+  </dependencies>
+  
 </project>
