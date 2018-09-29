@@ -2,8 +2,8 @@ package com.gems.monitoring.rma.scheduler;
 
 import java.util.TimerTask;
 
-import com.gems.monitoring.commons.domain.InstanceId;
-import com.gems.monitoring.commons.domain.MonitoredData;
+import com.gems.monitoring.domain.InstanceId;
+import com.gems.monitoring.domain.MonitoredData;
 import com.gems.monitoring.rma.datastore.MonitoringDataStore;
 import com.gems.monitoring.rma.sensor.Sensors;
 

@@ -1,6 +1,6 @@
-package com.gems.monitoring.ga.gossipdata;
+package com.gems.monitoring.domain;
 
-import com.gems.monitoring.commons.domain.InstanceId;
+import com.gems.monitoring.net.NetworkAddress;
 
 public final class Instance {
 

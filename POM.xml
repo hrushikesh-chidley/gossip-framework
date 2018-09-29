@@ -10,7 +10,6 @@
 
 	<modules>
 		<module>monitoring-service-commons</module>
-		<module>monitoring-service-interface</module>
 		<module>monitoring-service-ga</module>
 		<module>monitoring-service-rma</module>
 	</modules>

@@ -1,9 +1,10 @@
-package com.gems.monitoring.ga.gossipdata;
+package com.gems.monitoring.domain;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Optional;
 
-import com.gems.monitoring.commons.domain.InstanceId;
+import com.gems.monitoring.net.NetworkAddress;
 
 public final class GossipMessage implements Serializable {
 
@@ -12,7 +13,9 @@ public final class GossipMessage implements Serializable {
 	private final InstanceId instanceId;
 	private final Map<InstanceId, Integer> gossipMap;
 	private final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix;
-	private NetworkAddress sourceAddress;
+	private final NetworkAddress sourceAddress;
+	
+	private MonitoredData monitoringData;
 
 	public GossipMessage(final InstanceId instanceId, final Map<InstanceId, Integer> gossipMap,
 			final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix, final NetworkAddress sourceAddress) {
@@ -23,6 +26,14 @@ public final class GossipMessage implements Serializable {
 		this.sourceAddress = sourceAddress;
 	}
 
+	public GossipMessage(final InstanceId instanceId, final Map<InstanceId, Integer> gossipMap,
+			final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix, 
+			final NetworkAddress sourceAddress, final MonitoredData monitoringData ) {
+		this(instanceId, gossipMap, suspectMatrix, sourceAddress);
+		this.monitoringData = monitoringData;
+	}
+
+	
 	public final InstanceId getInstanceId() {
 		return instanceId;
 	}
@@ -37,6 +48,10 @@ public final class GossipMessage implements Serializable {
 
 	public final NetworkAddress getSourceAddress() {
 		return sourceAddress;
+	}
+	
+	public final Optional<MonitoredData> getMonitoringData() {
+		return monitoringData == null ? Optional.empty() : Optional.of(monitoringData);
 	}
 
 }

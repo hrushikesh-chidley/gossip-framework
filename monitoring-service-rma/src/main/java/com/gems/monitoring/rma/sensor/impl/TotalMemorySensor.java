@@ -1,6 +1,6 @@
 package com.gems.monitoring.rma.sensor.impl;
 
-import com.gems.monitoring.commons.domain.ResourceData;
+import com.gems.monitoring.domain.ResourceData;
 import com.gems.monitoring.rma.sensor.ResourceSensor;
 
 public class TotalMemorySensor implements ResourceSensor<Long> {

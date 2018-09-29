@@ -1,6 +1,6 @@
-package com.gems.monitoring.commons.util;
+package com.gems.monitoring.util;
 
-import com.gems.monitoring.commons.domain.MonitoredData;
+import com.gems.monitoring.domain.MonitoredData;
 
 public class PrettyPrinter {
 	

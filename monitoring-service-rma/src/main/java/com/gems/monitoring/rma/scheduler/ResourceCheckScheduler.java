@@ -2,7 +2,7 @@ package com.gems.monitoring.rma.scheduler;
 
 import java.util.Timer;
 
-import com.gems.monitoring.commons.domain.InstanceId;
+import com.gems.monitoring.domain.InstanceId;
 import com.gems.monitoring.rma.datastore.MonitoringDataStore;
 
 public class ResourceCheckScheduler {

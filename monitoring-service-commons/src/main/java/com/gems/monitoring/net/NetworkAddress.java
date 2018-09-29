@@ -1,4 +1,4 @@
-package com.gems.monitoring.ga.gossipdata;
+package com.gems.monitoring.net;
 
 import java.io.Serializable;
 

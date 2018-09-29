@@ -1,7 +1,7 @@
 package com.gems.monitoring.rma;
 
-import com.gems.monitoring.commons.domain.InstanceId;
-import com.gems.monitoring.commons.domain.MonitoredData;
+import com.gems.monitoring.domain.InstanceId;
+import com.gems.monitoring.domain.MonitoredData;
 import com.gems.monitoring.function.ResourceMonitoringAgent;
 import com.gems.monitoring.rma.datastore.MonitoringDataStore;
 import com.gems.monitoring.rma.datastore.impl.InMemoryDataStore;

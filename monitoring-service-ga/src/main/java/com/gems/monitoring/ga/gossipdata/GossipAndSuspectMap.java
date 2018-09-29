@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gems.monitoring.commons.domain.InstanceId;
+import com.gems.monitoring.domain.InstanceId;
 
 public final class GossipAndSuspectMap {
 

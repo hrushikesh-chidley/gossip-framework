@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.gems.monitoring.domain.Instance;
+
 public final class InstanceList {
 
 	private List<Instance> instanceList;

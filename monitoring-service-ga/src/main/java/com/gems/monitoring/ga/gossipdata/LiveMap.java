@@ -3,7 +3,7 @@ package com.gems.monitoring.ga.gossipdata;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gems.monitoring.commons.domain.InstanceId;
+import com.gems.monitoring.domain.InstanceId;
 
 public class LiveMap {
 	

@@ -1,8 +1,8 @@
 package com.gems.monitoring.rma;
 
-import com.gems.monitoring.commons.domain.InstanceId;
-import com.gems.monitoring.commons.util.PrettyPrinter;
+import com.gems.monitoring.domain.InstanceId;
 import com.gems.monitoring.function.ResourceMonitoringAgent;
+import com.gems.monitoring.util.PrettyPrinter;
 
 public class MainTest {
 	
