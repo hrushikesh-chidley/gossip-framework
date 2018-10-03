@@ -1,7 +1,9 @@
-package com.gems.monitoring.ga.gossipdata;
+package com.gems.monitoring.ga;
 
 import java.util.Timer;
-import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gems.monitoring.domain.Configurations;
 import com.gems.monitoring.domain.GossipMessage;
@@ -16,6 +18,8 @@ import com.gems.monitoring.function.ResourceMonitoringAgent;
 import com.gems.monitoring.net.NetworkProxy;
 
 public class GossipAgentImpl implements GossipAgent {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private ResourceMonitoringAgent resourceMonitoringAgent;
 
@@ -27,23 +31,23 @@ public class GossipAgentImpl implements GossipAgent {
 	private long tGossip;
 	private int tCleanupCount;
 
-	private InstanceId acquireInstanceId(final Configurations config) {
-		return new InstanceId(config.getProvidedInstanceId().orElse(UUID.randomUUID().toString()));
-	}
 
 	@Override
 	public final void initialize(final Configurations config) throws MonitoringServiceException {
+		logger.debug("Initializing the Gossip Agent with configurations : "+config);
 		tGossip = config.getGossipDelay();
 		tCleanupCount = config.getCleanupCount();
 		
-		ownInstanceId = acquireInstanceId(config);
+		ownInstanceId = config.getInstanceId();
 		GossipData.initialize(ownInstanceId, config.getCleanupCount(), config.getPartitionCount());
 
 		network = NetworkProxy.getInstance(config.getBasePort(), config.getLocalPort(), config.getBroadcastIP());
 		network.registerForGossipMessage(this);
-		GossipScheduler gossipScheduler = new GossipScheduler(this);
+		final GossipScheduler gossipScheduler = new GossipScheduler(this);
 
+		logger.debug("Scheduling gossip every "+config.getGossipDelay()+" milliseconds");
 		new Timer().scheduleAtFixedRate(gossipScheduler, config.getGossipDelay(), config.getGossipDelay());
+		logger.debug("Gossip Agent initialized");
 	}
 
 	@Override
@@ -53,6 +57,7 @@ public class GossipAgentImpl implements GossipAgent {
 
 	@Override
 	public void processReceivedGossipMessage(final GossipMessage message) throws MonitoringServiceException {
+		logger.debug("Received Gossip Message. "+message);
 		final GossipData gossipData = GossipData.getInstance();
 
 		final InstanceId receivedInstanceId = message.getInstanceId();
@@ -70,9 +75,14 @@ public class GossipAgentImpl implements GossipAgent {
 	@Override
 	public void broadcastIdMessageIfAppropriate() throws MonitoringServiceException {
 		final long currentTime = System.currentTimeMillis();
-		if ((currentTime - lastBroadcastTime) > tGossip * tCleanupCount) {
+		final long timeSinceLastBroadcast = currentTime-lastBroadcastTime;
+		logger.debug("Time since last broadcast message was sent is: "+timeSinceLastBroadcast+" milliseconds");
+		if ((timeSinceLastBroadcast) > (tGossip * tCleanupCount)) {
+			logger.debug("Sending the next broadcast message");
 			network.broadcastMessage(createGossipMessageToSend());
 			lastBroadcastTime = currentTime;
+		} else {
+			logger.debug("Ignoring the trigger!!");
 		}
 	}
 
@@ -98,8 +108,10 @@ public class GossipAgentImpl implements GossipAgent {
 		final MonitoredData monitoringData = resourceMonitoringAgent.getMonitoredDataForInstance(ownInstanceId);
 		GossipData gossipData = GossipData.getInstance();
 
-		return new GossipMessage(ownInstanceId, gossipData.getGossipMapToSend(), gossipData.getSuspectMatrixToSend(),
+		final GossipMessage gossipMessage = new GossipMessage(ownInstanceId, gossipData.getGossipMapToSend(), gossipData.getSuspectMatrixToSend(),
 				network.getSelfNetworkAddress(), monitoringData);
+		logger.debug("Gossip message created : "+gossipMessage);
+		return gossipMessage;
 	}
 
 

@@ -22,5 +22,21 @@ public final class NetworkAddress implements Serializable {
 	public final int getPort() {
 		return port;
 	}
+	
+	@Override
+	public String toString() {
+		return "[{IP: "+ip+"}, {Port: "+port+"}]";
+	}
 
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof NetworkAddress && ((NetworkAddress) other).ip.equals(ip)
+				&& ((NetworkAddress) other).port == port;
+	}
+
+	@Override
+	public int hashCode() {
+		int ipCode = ip.hashCode();
+		return (ipCode*port) + ipCode + port;
+	}
 }

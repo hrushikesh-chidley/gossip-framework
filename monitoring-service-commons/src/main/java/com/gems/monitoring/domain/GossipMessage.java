@@ -46,5 +46,24 @@ public final class GossipMessage extends Message {
 	public final Optional<MonitoredData> getMonitoringData() {
 		return monitoringData == null ? Optional.empty() : Optional.of(monitoringData);
 	}
+	
+	@Override
+	public String toString() {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("\nGossip Message : [");
+		buffer.append("\n{Instance Id: "+instanceId+"}");
+		buffer.append("\n{Gossip Map: ");
+		gossipMap.forEach((instanceId, count) -> buffer.append("("+instanceId+","+count+")"));
+		buffer.append("}");
+		buffer.append("\n{Suspect Matrix: ");
+		suspectMatrix.forEach((instanceId, suspectMap) ->{
+			buffer.append("\n\t"+instanceId+" ->");
+			suspectMap.forEach((id, suspicion) -> buffer.append("("+id+","+suspicion+")"));
+			
+		});
+		buffer.append("\n}\n{Monitoring Data: "+monitoringData+"}");
+		buffer.append("\n]");
+		return buffer.toString();
+	}
 
 }

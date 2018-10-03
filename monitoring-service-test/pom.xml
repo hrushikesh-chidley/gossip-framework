@@ -9,18 +9,31 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>monitoring-service-rma</artifactId>
+	<artifactId>monitoring-service-test</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>monitoring-service-commons</artifactId>
+			<artifactId>monitoring-service-ga</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>monitoring-service-rma</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

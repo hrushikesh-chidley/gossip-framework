@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
+import com.gems.monitoring.rma.sensor.impl.AbstractResourceSensor;
+
 @SuppressWarnings("rawtypes")
 public class Sensors {
 	
@@ -14,7 +16,7 @@ public class Sensors {
 	
 	static {
 		Reflections reflection = new Reflections("com");
-		final Set<Class<? extends ResourceSensor>> sensorClasses = reflection.getSubTypesOf(ResourceSensor.class);
+		final Set<Class<? extends AbstractResourceSensor>> sensorClasses = reflection.getSubTypesOf(AbstractResourceSensor.class);
 		
 		sensorClasses.forEach(sensorClass -> { 
 		try {

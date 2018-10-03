@@ -28,4 +28,12 @@ public class MonitoredData implements Serializable {
 	public final void addToMonitoredData(final ResourceData<?> monitoredData ) {
 		monitoredDataSet.add(monitoredData);
 	}
+	
+	@Override
+	public String toString() {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("[{Instance Id: "+instanceId+"}, ");
+		monitoredDataSet.forEach(data -> buffer.append(data.toString()+","));
+		return buffer.substring(0, buffer.length() - 1)+"]";
+	}
 }

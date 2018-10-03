@@ -1,27 +1,13 @@
 package com.gems.monitoring.rma.sensor.impl;
 
 import com.gems.monitoring.domain.ResourceData;
-import com.gems.monitoring.rma.sensor.ResourceSensor;
 
-public class RemainingMemorySensor implements ResourceSensor<Long> {
+public class RemainingMemorySensor extends AbstractResourceSensor<Long> {
 
 	@Override
-	public final ResourceData<Long> senseResourceData() {
+	public final ResourceData<Long> senseResourceDataInt() {
 		System.gc();
-		final long freeMemory = Runtime.getRuntime().freeMemory();
-		
-		return new ResourceData<Long>() {
-
-			@Override
-			public String getResourceName() {
-				return "free-memory";
-			}
-
-			@Override
-			public Long getCurrentValue() {
-				return freeMemory;
-			}
-		};
+		return new RemainingMemoryData(Runtime.getRuntime().freeMemory());
 	}
 
 }
