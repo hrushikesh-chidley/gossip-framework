@@ -4,23 +4,13 @@ target
 .settings/*
 .classpath
 
-monitoring-service-commons/target/*
-monitoring-service-commons/.project
-monitoring-service-commons/.settings/*
-monitoring-service-commons/.classpath
+gossip-core/target/*
+gossip-core/.project
+gossip-core/.settings/*
+gossip-core/.classpath
 
-monitoring-service-interface/target/*
-monitoring-service-interface/.project
-monitoring-service-interface/.settings/*
-monitoring-service-interface/.classpath
-
-monitoring-service-ga/target/*
-monitoring-service-ga/.project
-monitoring-service-ga/.settings/*
-monitoring-service-ga/.classpath
-
-monitoring-service-rma/target/*
-monitoring-service-rma/.project
-monitoring-service-rma/.settings/*
-monitoring-service-rma/.classpath
+monitoring-extension/target/*
+monitoring-extension/.project
+monitoring-extension/.settings/*
+monitoring-extension/.classpath
 
