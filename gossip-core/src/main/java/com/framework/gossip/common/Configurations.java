@@ -118,7 +118,7 @@ public class Configurations {
 	}
 
 	private boolean isInvalidIP() {
-		final String[] IPParts = broadcastIP.split("/.");
+		final String[] IPParts = broadcastIP.split("\\.");
 		if(IPParts.length != 4) {
 			return true;
 		}

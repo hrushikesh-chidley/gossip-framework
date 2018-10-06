@@ -66,7 +66,7 @@ public class GossipData {
 				.forEach(instanceId -> {
 					Integer waitCount = gossipMap.get(instanceId);
 					gossipMap.replace(instanceId, ++waitCount);
-					if (waitCount >= tCleanupCount) {// && !liveMap.get(false).contains(instanceId)) {
+					if (waitCount >= tCleanupCount && !liveMap.get(false).contains(instanceId)) {
 						if (!suspectMap.get(instanceId)) {
 							suspectMap.replace(instanceId, true);
 							suspectMatrix.replace(selfInstanceId, suspectMap);
@@ -151,6 +151,7 @@ public class GossipData {
 		final InstanceId instanceId = instance.getInstanceId();
 		if (liveMap.get(true).add(instanceId)) {
 			addInstanceToInstanceList(instance);
+			logger.info("Instance " + instance + " is marked as live as received a gossip message from it!!");
 		} else {
 			logger.debug("Instance was already marked as Live. Proceeding!!");
 		}

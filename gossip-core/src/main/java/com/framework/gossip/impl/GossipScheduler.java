@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.framework.gossip.GossipAgent;
 import com.framework.gossip.domain.Instance;
-import com.framework.gossip.error.MonitoringServiceException;
+import com.framework.gossip.error.GossipException;
 
 public class GossipScheduler extends TimerTask {
 	
@@ -24,13 +24,13 @@ public class GossipScheduler extends TimerTask {
 	public void run() {
 		try {
 			performScheduledGossip();
-		} catch(MonitoringServiceException | RuntimeException e) {
+		} catch(GossipException | RuntimeException e) {
 			logger.error("The scheduled gossip round failed with exception. Details : "+e.getMessage());
 			logger.error("Exception Trace", e);
 		}
 	}
 	
-	private void performScheduledGossip() throws MonitoringServiceException {
+	private void performScheduledGossip() throws GossipException {
 		logger.debug("Running scheduled gossip!!");
 		final GossipData gossipData = GossipData.getInstance();
 		gossipData.updateForScheduledGossipTrigger();

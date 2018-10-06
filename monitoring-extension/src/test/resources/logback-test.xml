@@ -11,7 +11,11 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.gems.monitoring" level="INFO" additivity="false">
+	<logger name="com.framework.gossip" level="INFO" additivity="false">
+		<appender-ref ref="STDOUT" />
+	</logger>
+	
+	<logger name="com.monitoring.extension" level="INFO" additivity="false">
 		<appender-ref ref="STDOUT" />
 	</logger>
 

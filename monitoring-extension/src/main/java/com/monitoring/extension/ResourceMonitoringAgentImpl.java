@@ -13,7 +13,7 @@ import com.monitoring.extension.datastore.impl.InMemoryDataStore;
 import com.monitoring.extension.domain.MonitoredData;
 import com.monitoring.extension.scheduler.ResourceCheckScheduler;
 
-public class ResouceMonitoringAgentImpl implements GossipMessagePayloadAgent<MonitoredData> {
+public class ResourceMonitoringAgentImpl implements GossipMessagePayloadAgent<MonitoredData> {
 	
 	private Logger logger = LoggerFactory.getLogger(getClass());
 

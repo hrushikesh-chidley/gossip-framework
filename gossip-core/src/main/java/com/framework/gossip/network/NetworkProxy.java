@@ -22,7 +22,7 @@ import com.framework.gossip.GossipAgent;
 import com.framework.gossip.common.Constants;
 import com.framework.gossip.domain.NetworkAddress;
 import com.framework.gossip.error.ErrorCodes;
-import com.framework.gossip.error.MonitoringServiceException;
+import com.framework.gossip.error.GossipException;
 import com.framework.gossip.message.GossipMessage;
 import com.framework.gossip.message.InstanceEnquiryRequest;
 import com.framework.gossip.message.InstanceEnquiryResponse;
@@ -48,7 +48,7 @@ public final class NetworkProxy {
 	private volatile static NetworkProxy network;
 
 	private NetworkProxy(final int basePort, final int localPort, final String broadcastIP)
-			throws MonitoringServiceException {
+			throws GossipException {
 		this.basePort = basePort;
 		this.localPort = localPort;
 		this.broadcastIP = broadcastIP;
@@ -61,7 +61,7 @@ public final class NetworkProxy {
 	}
 
 	public static final NetworkProxy getInstance(final int basePort, final int localPort, final String broadcastIP)
-			throws MonitoringServiceException {
+			throws GossipException {
 		if (network == null) {
 			synchronized (NetworkProxy.class) {
 				if (network == null) {
@@ -82,11 +82,11 @@ public final class NetworkProxy {
 	}
 
 	public final void sendToDestination(final Message message, final NetworkAddress address)
-			throws MonitoringServiceException {
+			throws GossipException {
 		send(serializeMessage(message), address);
 	}
 
-	public final void broadcastMessage(final GossipMessage message) throws MonitoringServiceException {
+	public final void broadcastMessage(final GossipMessage message) throws GossipException {
 		final byte[] messageBytes = serializeMessage(message);
 		for (int i = 0; i < Constants.MAX_INSTANCES_PER_HOST; i++) {
 			final NetworkAddress broadcastAddress = new NetworkAddress(broadcastIP, basePort + i);
@@ -94,7 +94,7 @@ public final class NetworkProxy {
 		}
 	}
 
-	private void startUDPListening() throws MonitoringServiceException {
+	private void startUDPListening() throws GossipException {
 		try {
 			final DatagramSocket socket = new DatagramSocket(localPort);
 			messageReceiver.submit(() -> {
@@ -124,13 +124,13 @@ public final class NetworkProxy {
 			if (messageBytes.isPresent()) {
 				processReceivedMessage(messageBytes.get());
 			}
-		} catch (MonitoringServiceException | RuntimeException e) {
+		} catch (GossipException | RuntimeException e) {
 			logger.error("Error occured while processing the received message. Error message :" + e.getMessage());
 			logger.error("Exception Trace", e);
 		} 
 	}
 
-	private void processReceivedMessage(final byte[] receivedData) throws MonitoringServiceException {
+	private void processReceivedMessage(final byte[] receivedData) throws GossipException {
 		final Message message = deserializeMessage(receivedData);
 		if (message.getSourceAddress().equals(selfAddress)) {
 			logger.debug("Received self broadcasted message. Ignoring!!");
@@ -151,7 +151,7 @@ public final class NetworkProxy {
 	}
 
 	private void send(final byte[] messageBytes, final NetworkAddress address)
-			throws MonitoringServiceException {
+			throws GossipException {
 		try (final DatagramSocket socket = new DatagramSocket()) {
 			socket.setBroadcast(true);
 			for (NetworkPacket packetToSend : splitMessage(messageBytes)) {
@@ -166,23 +166,23 @@ public final class NetworkProxy {
 		logger.debug("Message sent over UDP (connectionless) to " + address);
 	}
 
-	private byte[] serializeMessage(final Message message) throws MonitoringServiceException {
+	private byte[] serializeMessage(final Message message) throws GossipException {
 		return serializeObject(message);
 	}
 
-	private byte[] serializePacket(final NetworkPacket packet) throws MonitoringServiceException {
+	private byte[] serializePacket(final NetworkPacket packet) throws GossipException {
 		return serializeObject(packet);
 	}
 
-	private Message deserializeMessage(final byte[] messageBytes) throws MonitoringServiceException {
+	private Message deserializeMessage(final byte[] messageBytes) throws GossipException {
 		return (Message) deserializeObject(messageBytes);
 	}
 
-	private NetworkPacket deserializePacket(final byte[] packetBytes) throws MonitoringServiceException {
+	private NetworkPacket deserializePacket(final byte[] packetBytes) throws GossipException {
 		return (NetworkPacket) deserializeObject(packetBytes);
 	}
 
-	private byte[] serializeObject(final Object object) throws MonitoringServiceException {
+	private byte[] serializeObject(final Object object) throws GossipException {
 
 		try (final ByteArrayOutputStream bos = new ByteArrayOutputStream(1000);
 				final ObjectOutputStream out = new ObjectOutputStream(bos)) {
@@ -194,7 +194,7 @@ public final class NetworkProxy {
 
 	}
 
-	private Object deserializeObject(final byte[] bytes) throws MonitoringServiceException {
+	private Object deserializeObject(final byte[] bytes) throws GossipException {
 		try (final ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
 				final ObjectInputStream in = new ObjectInputStream(bis)) {
 			return in.readObject();

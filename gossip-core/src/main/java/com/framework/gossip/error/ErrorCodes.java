@@ -19,11 +19,11 @@ public enum ErrorCodes {
 		this.message = message;
 	}
 	
-	public final MonitoringServiceException createException(final Object ... params) {
-		return new MonitoringServiceException(code, MessageFormat.format(message, params));
+	public final GossipException createException(final Object ... params) {
+		return new GossipException(code, MessageFormat.format(message, params));
 	}
 
-	public final MonitoringServiceException createException( final Exception cause, final Object ... params) {
-		return new MonitoringServiceException(code, MessageFormat.format(message, params), cause);
+	public final GossipException createException( final Exception cause, final Object ... params) {
+		return new GossipException(code, MessageFormat.format(message, params), cause);
 	}
 }
