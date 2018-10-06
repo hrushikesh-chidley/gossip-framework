@@ -11,20 +11,21 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gems.monitoring.domain.GossipMessage;
-import com.gems.monitoring.domain.InstanceEnquiryRequest;
-import com.gems.monitoring.domain.InstanceEnquiryResponse;
-import com.gems.monitoring.domain.Message;
+import com.gems.monitoring.domain.NetworkAddress;
 import com.gems.monitoring.error.ErrorCodes;
 import com.gems.monitoring.error.MonitoringServiceException;
 import com.gems.monitoring.function.GossipAgent;
-import com.gems.monitoring.util.MessageSplitter;
+import com.gems.monitoring.message.GossipMessage;
+import com.gems.monitoring.message.InstanceEnquiryRequest;
+import com.gems.monitoring.message.InstanceEnquiryResponse;
+import com.gems.monitoring.message.Message;
 
 public final class NetworkProxy {
 
@@ -33,6 +34,8 @@ public final class NetworkProxy {
 	private final ExecutorService receviedMessageExecutors = Executors.newCachedThreadPool();
 	private final ExecutorService messageReceiver = Executors.newFixedThreadPool(1);
 
+	private static final int MAX_PACKET_SIZE = 1000;
+	
 	private final String broadcastIP;
 	private final int localPort;
 	private final int basePort;
@@ -81,14 +84,14 @@ public final class NetworkProxy {
 
 	public final void sendToDestination(final Message message, final NetworkAddress address)
 			throws MonitoringServiceException {
-		sendToDestination(serializeMessage(message), address);
+		send(serializeMessage(message), address);
 	}
 
 	public final void broadcastMessage(final GossipMessage message) throws MonitoringServiceException {
 		final byte[] messageBytes = serializeMessage(message);
 		for (int i = 0; i < 5; i++) {
 			final NetworkAddress broadcastAddress = new NetworkAddress(broadcastIP, basePort + i);
-			sendToDestination(messageBytes, broadcastAddress);
+			send(messageBytes, broadcastAddress);
 		}
 	}
 
@@ -102,7 +105,7 @@ public final class NetworkProxy {
 						final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 						socket.receive(packet);
 						final byte[] receivedData = packet.getData();
-						receviedMessageExecutors.submit(() -> processReceivedData(receivedData));
+						receviedMessageExecutors.submit(() -> receive(receivedData));
 					}
 				} catch (IOException e) {
 					throw ErrorCodes.GOSSIP_RECEIVING_FAILED.createException(e);
@@ -115,7 +118,7 @@ public final class NetworkProxy {
 		}
 	}
 
-	private void processReceivedData(final byte[] receivedData) {
+	private void receive(final byte[] receivedData) {
 		try {
 			final NetworkPacket networkPacket = deserializePacket(receivedData);
 			final Optional<byte[]> messageBytes = messageAggregator.getMessageBytesIfComplete(networkPacket);
@@ -148,11 +151,11 @@ public final class NetworkProxy {
 		}
 	}
 
-	private void sendToDestination(final byte[] messageBytes, final NetworkAddress address)
+	private void send(final byte[] messageBytes, final NetworkAddress address)
 			throws MonitoringServiceException {
 		try (final DatagramSocket socket = new DatagramSocket()) {
 			socket.setBroadcast(true);
-			for (NetworkPacket packetToSend : MessageSplitter.splitMessage(messageBytes)) {
+			for (NetworkPacket packetToSend : splitMessage(messageBytes)) {
 				final byte[] packetBytes = serializePacket(packetToSend);
 				final DatagramPacket packet = new DatagramPacket(packetBytes, packetBytes.length,
 						InetAddress.getByName(address.getIp()), address.getPort());
@@ -199,6 +202,28 @@ public final class NetworkProxy {
 		} catch (IOException | ClassNotFoundException e) {
 			throw ErrorCodes.INTERNAL_ERROR.createException(e);
 		}
+	}
+	
+	private final NetworkPacket[] splitMessage(final byte[] messageBytes) {
+		final int messageSize = messageBytes.length;
+		final int packetsRequired = (int) ((messageSize % MAX_PACKET_SIZE == 0) ? (messageSize / MAX_PACKET_SIZE)
+				: ((messageSize / MAX_PACKET_SIZE) + 1));
+
+		final NetworkPacket[] packets = new NetworkPacket[packetsRequired];
+
+		final String packetId = UUID.randomUUID().toString();
+		for (int i = 1; i <= packetsRequired; i++) {
+			byte[] dataPart;
+			if (i == packetsRequired) {
+				dataPart = new byte[messageSize - ((i-1) * MAX_PACKET_SIZE)];
+			} else {
+				dataPart = new byte[MAX_PACKET_SIZE];
+			}
+			System.arraycopy(messageBytes, (i-1) * MAX_PACKET_SIZE, dataPart, 0, dataPart.length);
+			final NetworkPacket packet = new NetworkPacket(packetId, i, packetsRequired, dataPart);
+			packets[i - 1] = packet;
+		}
+		return packets;
 	}
 
 }

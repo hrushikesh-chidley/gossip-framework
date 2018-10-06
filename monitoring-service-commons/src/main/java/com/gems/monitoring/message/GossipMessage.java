@@ -1,9 +1,11 @@
-package com.gems.monitoring.domain;
+package com.gems.monitoring.message;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-import com.gems.monitoring.net.NetworkAddress;
+import com.gems.monitoring.domain.InstanceId;
+import com.gems.monitoring.domain.NetworkAddress;
 
 public final class GossipMessage extends Message {
 
@@ -13,8 +15,8 @@ public final class GossipMessage extends Message {
 	private final Map<InstanceId, Integer> gossipMap;
 	private final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix;
 	
-	private MonitoredData monitoringData;
-
+	private Map<String, Serializable> payloadData = new HashMap<>(5);
+	
 	public GossipMessage(final InstanceId instanceId, final Map<InstanceId, Integer> gossipMap,
 			final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix, final NetworkAddress sourceAddress) {
 		super(MessageTypes.GOSSIP, sourceAddress);
@@ -23,14 +25,6 @@ public final class GossipMessage extends Message {
 		this.suspectMatrix = suspectMatrix;
 	}
 
-	public GossipMessage(final InstanceId instanceId, final Map<InstanceId, Integer> gossipMap,
-			final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix, 
-			final NetworkAddress sourceAddress, final MonitoredData monitoringData ) {
-		this(instanceId, gossipMap, suspectMatrix, sourceAddress);
-		this.monitoringData = monitoringData;
-	}
-
-	
 	public final InstanceId getInstanceId() {
 		return instanceId;
 	}
@@ -43,8 +37,12 @@ public final class GossipMessage extends Message {
 		return suspectMatrix;
 	}
 
-	public final Optional<MonitoredData> getMonitoringData() {
-		return monitoringData == null ? Optional.empty() : Optional.of(monitoringData);
+	public final void addPayloadData(final String payloadAgentId, final Serializable payloadData) {
+		this.payloadData.put(payloadAgentId, payloadData);
+	}
+	
+	public final Map<String, Serializable> getPayloadData() {
+		return payloadData;
 	}
 	
 	@Override
@@ -61,8 +59,7 @@ public final class GossipMessage extends Message {
 			suspectMap.forEach((id, suspicion) -> buffer.append("("+id+","+suspicion+")"));
 			
 		});
-		buffer.append("\n}\n{Monitoring Data: "+monitoringData+"}");
-		buffer.append("\n]");
+		buffer.append("\n}]");
 		return buffer.toString();
 	}
 

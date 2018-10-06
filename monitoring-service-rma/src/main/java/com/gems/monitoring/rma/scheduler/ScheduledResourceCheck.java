@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gems.monitoring.domain.InstanceId;
-import com.gems.monitoring.domain.MonitoredData;
 import com.gems.monitoring.rma.datastore.MonitoringDataStore;
+import com.gems.monitoring.rma.domain.MonitoredData;
 import com.gems.monitoring.rma.sensor.Sensors;
 
 public class ScheduledResourceCheck extends TimerTask {

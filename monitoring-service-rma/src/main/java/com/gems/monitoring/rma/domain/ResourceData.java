@@ -1,4 +1,4 @@
-package com.gems.monitoring.domain;
+package com.gems.monitoring.rma.domain;
 
 import java.io.Serializable;
 

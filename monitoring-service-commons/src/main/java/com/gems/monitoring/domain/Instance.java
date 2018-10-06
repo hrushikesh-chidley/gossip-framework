@@ -2,8 +2,6 @@ package com.gems.monitoring.domain;
 
 import java.io.Serializable;
 
-import com.gems.monitoring.net.NetworkAddress;
-
 public final class Instance implements Serializable {
 
 	private static final long serialVersionUID = -7038623667760442368L;

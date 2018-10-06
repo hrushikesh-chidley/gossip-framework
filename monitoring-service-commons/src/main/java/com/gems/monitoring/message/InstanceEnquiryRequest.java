@@ -1,6 +1,6 @@
-package com.gems.monitoring.domain;
+package com.gems.monitoring.message;
 
-import com.gems.monitoring.net.NetworkAddress;
+import com.gems.monitoring.domain.NetworkAddress;
 
 public final class InstanceEnquiryRequest extends Message {
 

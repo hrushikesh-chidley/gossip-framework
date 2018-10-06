@@ -2,7 +2,7 @@ package com.gems.monitoring.rma.sensor;
 
 import java.io.Serializable;
 
-import com.gems.monitoring.domain.ResourceData;
+import com.gems.monitoring.rma.domain.ResourceData;
 
 public interface ResourceSensor<T extends Serializable> {
 	

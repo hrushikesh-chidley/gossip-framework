@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gems.monitoring.domain.ResourceData;
+import com.gems.monitoring.rma.domain.ResourceData;
 import com.gems.monitoring.rma.sensor.ResourceSensor;
 
 public abstract class AbstractResourceSensor<T extends Serializable> implements ResourceSensor<T> {

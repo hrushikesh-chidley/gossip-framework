@@ -1,6 +1,8 @@
-package com.gems.monitoring.domain;
+package com.gems.monitoring.config;
 
 import java.util.UUID;
+
+import com.gems.monitoring.domain.InstanceId;
 
 public class Configurations {
 

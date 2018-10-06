@@ -1,4 +1,4 @@
-package com.gems.monitoring.domain;
+package com.gems.monitoring.message;
 
 public enum MessageTypes {
 	GOSSIP,

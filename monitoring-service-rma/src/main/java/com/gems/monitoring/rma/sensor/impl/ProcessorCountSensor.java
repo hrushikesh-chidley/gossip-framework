@@ -1,6 +1,6 @@
 package com.gems.monitoring.rma.sensor.impl;
 
-import com.gems.monitoring.domain.ResourceData;
+import com.gems.monitoring.rma.domain.ResourceData;
 
 public class ProcessorCountSensor extends AbstractResourceSensor<Long> {
 

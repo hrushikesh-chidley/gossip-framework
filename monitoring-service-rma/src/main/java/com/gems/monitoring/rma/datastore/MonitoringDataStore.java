@@ -3,7 +3,7 @@ package com.gems.monitoring.rma.datastore;
 import java.util.Set;
 
 import com.gems.monitoring.domain.InstanceId;
-import com.gems.monitoring.domain.MonitoredData;
+import com.gems.monitoring.rma.domain.MonitoredData;
 
 public interface MonitoringDataStore {
 	

@@ -1,6 +1,6 @@
 package com.gems.monitoring.rma.sensor.impl;
 
-public class RemainingMemoryData extends AbstractResourceData<Long>{
+public class RemainingMemoryData extends AbstractResourceData<String>{
 
 	private static final long serialVersionUID = 6216327093587873378L;
 	private long freeMemory;
@@ -15,8 +15,8 @@ public class RemainingMemoryData extends AbstractResourceData<Long>{
 	}
 
 	@Override
-	public Long getCurrentValue() {
-		return freeMemory/1000000;
+	public String getCurrentValue() {
+		return freeMemory+" [("+freeMemory/1000+" kb), ("+freeMemory/1000000+" mb)]";
 	}
 	
 }

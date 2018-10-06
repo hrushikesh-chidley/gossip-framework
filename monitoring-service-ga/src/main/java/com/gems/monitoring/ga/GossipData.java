@@ -2,6 +2,7 @@ package com.gems.monitoring.ga;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,9 +23,10 @@ public class GossipData {
 
 	private final Map<InstanceId, Integer> gossipMap = new ConcurrentHashMap<>(53);
 	private final Map<InstanceId, Boolean> suspectMap = new ConcurrentHashMap<>(53);
-	private final Map<Boolean, List<InstanceId>> liveMap = new ConcurrentHashMap<>(2);
+	private final Map<Boolean, Set<InstanceId>> liveMap = new ConcurrentHashMap<>(2);
 	private final Map<InstanceId, Map<InstanceId, Boolean>> suspectMatrix = new ConcurrentHashMap<>(53);
 	private final Map<InstanceId, Instance> instances = new ConcurrentHashMap<>(53);
+	private final Map<InstanceId, PartitionDecisionData> partitionDecisionMap = new ConcurrentHashMap<>(53);
 
 	private final Set<InstanceId> consensusExcluded = ConcurrentHashMap.newKeySet(53);
 
@@ -45,10 +47,10 @@ public class GossipData {
 		gossipMap.put(selfInstanceId, 0);
 		suspectMap.put(selfInstanceId, false);
 		suspectMatrix.put(selfInstanceId, suspectMap);
-		final List<InstanceId> instances = new ArrayList<>(53);
+		final Set<InstanceId> instances = new HashSet<>(53);
 		instances.add(selfInstanceId);
 		liveMap.put(true, instances);
-		liveMap.put(false, new ArrayList<>());
+		liveMap.put(false, new HashSet<>());
 	}
 
 	public static final void initialize(final InstanceId selfInstanceId, final int tCleanupCount,
@@ -64,8 +66,8 @@ public class GossipData {
 				.forEach(instanceId -> {
 					Integer waitCount = gossipMap.get(instanceId);
 					gossipMap.replace(instanceId, ++waitCount);
-					if (waitCount >= tCleanupCount) {
-						if(!suspectMap.get(instanceId)) {
+					if (waitCount >= tCleanupCount) {// && !liveMap.get(false).contains(instanceId)) {
+						if (!suspectMap.get(instanceId)) {
 							suspectMap.replace(instanceId, true);
 							suspectMatrix.replace(selfInstanceId, suspectMap);
 						}
@@ -83,8 +85,6 @@ public class GossipData {
 
 		logger.debug("Received Gossip Map : " + receivedGossipMap);
 		logger.debug("Received Suspect Matrix : " + receivedSuspectMatrix);
-
-		//checkForNetworkPartitioning(receivedSuspectMatrix);
 
 		for (Entry<InstanceId, Integer> receivedEntries : receivedGossipMap.entrySet()) {
 			InstanceId instanceId = receivedEntries.getKey();
@@ -117,63 +117,6 @@ public class GossipData {
 		return doEnquireInstanceList;
 	}
 
-	private void buildConsensus(final InstanceId suspectedInstanceId) {
-		logGossipData("buildConsensus", "after-entry");
-		final List<InstanceId> liveInstances = liveMap.get(true);
-		final long globalSuspectCount = suspectMatrix.keySet().parallelStream()
-				.filter(instanceId -> liveInstances.contains(instanceId))
-				.filter(instanceId -> !consensusExcluded.contains(instanceId))
-				.filter(instanceId -> suspectMatrix.get(instanceId).get(suspectedInstanceId)).count();
-		logger.info("globalSuspectCount -->"+globalSuspectCount);
-		logger.info("Consensus excluded -->"+consensusExcluded.size());
-
-		final int consensusJuryCount = liveInstances.size() - consensusExcluded.size();
-		logger.info("ConsensusJuryCount -->"+consensusJuryCount);
-
-		if (globalSuspectCount == consensusJuryCount) {
-			liveMap.get(true).remove(suspectedInstanceId);
-			final List<InstanceId> deadInstances = liveMap.get(false);
-			if(!deadInstances.contains(suspectedInstanceId)) {
-				deadInstances.add(suspectedInstanceId);
-				liveMap.put(false, deadInstances);
-			}
-			consensusExcluded.remove(suspectedInstanceId);
-		} else if (globalSuspectCount >= consensusJuryCount / 2) {
-			consensusExcluded.add(suspectedInstanceId);
-		}
-		logGossipData("buildConsensus", "before-exit");
-	}
-
-	@SuppressWarnings("unused")
-	private void checkForNetworkPartitioning(final Map<InstanceId, Map<InstanceId, Boolean>> receivedSuspectMatrix) {
-		logGossipData("checkForNetworkPartitioning", "after-entry");
-		suspectMap.keySet().parallelStream().filter(instanceid -> suspectMap.get(instanceid))
-				.filter(instanceId -> !isValueChanged(receivedSuspectMatrix, instanceId))
-				.filter(instanceId -> gossipMap.get(instanceId) >= tPartitionCount).forEach(instanceId -> {
-					logger.debug("Network partitioning detected. Instance with id " + instanceId
-							+ " on other side of partition. Marking it as non-live!!");
-					liveMap.get(true).remove(instanceId);
-					liveMap.get(false).add(instanceId);
-					consensusExcluded.remove(instanceId);
-				});
-		logGossipData("checkForNetworkPartitioning", "before-exit");
-	}
-
-	private boolean isValueChanged(final Map<InstanceId, Map<InstanceId, Boolean>> receivedSuspectMatrix,
-			final InstanceId instanceId) {
-		boolean isValueDifferent = false;
-		for (InstanceId id : suspectMatrix.keySet()) {
-			final Map<InstanceId, Boolean> localSuspectMap = suspectMatrix.get(id);
-			final Map<InstanceId, Boolean> receivedSuspectMap = receivedSuspectMatrix.get(id);
-
-			isValueDifferent = !(localSuspectMap.get(instanceId).equals(receivedSuspectMap.get(instanceId)));
-			if (isValueDifferent) {
-				break;
-			}
-		}
-		return isValueDifferent;
-	}
-
 	public static final GossipData getInstance() {
 		return gossipData;
 	}
@@ -187,14 +130,15 @@ public class GossipData {
 	}
 
 	public final Optional<Instance> getRandomLiveInstanceIfAvailable() {
-		final List<InstanceId> liveInstances = liveMap.get(true);
-		final int liveInstancesCount = liveInstances.size();
-		if(liveInstancesCount <= 1) {
+		final int liveInstancesCount = liveMap.get(true).size();
+		if (liveInstancesCount <= 1) {
 			return Optional.empty();
 		}
+
+		final InstanceId[] liveInstances = liveMap.get(true).toArray(new InstanceId[liveInstancesCount]);
 		while (true) {
 			final int randomIndex = randomNumGenerator.nextInt(liveInstancesCount);
-			final InstanceId instanceId = liveInstances.get(randomIndex);
+			final InstanceId instanceId = liveInstances[randomIndex];
 			if (!instanceId.equals(selfInstanceId)) {
 				return Optional.of(instances.get(instanceId));
 			}
@@ -205,8 +149,7 @@ public class GossipData {
 		logGossipData("markInstanceAsLive", "after-entry");
 		logger.debug("Marking the instance " + instance + " live as just received gossip message from it!!");
 		final InstanceId instanceId = instance.getInstanceId();
-		if (!liveMap.get(true).contains(instanceId)) {
-			liveMap.get(true).add(instanceId);
+		if (liveMap.get(true).add(instanceId)) {
 			addInstanceToInstanceList(instance);
 		} else {
 			logger.debug("Instance was already marked as Live. Proceeding!!");
@@ -232,14 +175,91 @@ public class GossipData {
 		return new ArrayList<Instance>(instances.values());
 	}
 
+	public Map<Boolean, Set<InstanceId>> getLiveMap() {
+		return liveMap;
+	}
+
+	private void buildConsensus(final InstanceId suspectedInstanceId) {
+		logGossipData("buildConsensus", "after-entry");
+		final Set<InstanceId> liveInstances = liveMap.get(true);
+		final long globalSuspectCount = suspectMatrix.keySet().parallelStream()
+				.filter(instanceId -> liveInstances.contains(instanceId))
+				.filter(instanceId -> !consensusExcluded.contains(instanceId))
+				.filter(instanceId -> suspectMatrix.get(instanceId).get(suspectedInstanceId) != null
+						&& suspectMatrix.get(instanceId).get(suspectedInstanceId))
+				.count();
+
+		final int consensusJuryCount = liveInstances.size() - consensusExcluded.size();
+
+		if (globalSuspectCount == consensusJuryCount) {
+			liveMap.get(true).remove(suspectedInstanceId);
+			liveMap.get(false).add(suspectedInstanceId);
+			logger.warn("Instance with Instance Id " + suspectedInstanceId + " is down!!");
+			consensusExcluded.remove(suspectedInstanceId);
+			partitionDecisionMap.remove(suspectedInstanceId);
+		} else if (globalSuspectCount >= consensusJuryCount / 2) {
+			consensusExcluded.add(suspectedInstanceId);
+			partitionDecisionMap.remove(suspectedInstanceId);
+		} else {
+			checkForNetworkPartitioning(suspectedInstanceId);
+		}
+		logGossipData("buildConsensus", "before-exit");
+	}
+
+	private void checkForNetworkPartitioning(final InstanceId suspectedInstanceId) {
+		logGossipData("checkForNetworkPartitioning", "after-entry");
+
+		final PartitionDecisionData partitionDecisionData = partitionDecisionMap.get(suspectedInstanceId);
+
+		if (partitionDecisionData == null) {
+			final PartitionDecisionData data = new PartitionDecisionData();
+			suspectMatrix.forEach(
+					(instanceId, suspectMap) -> data.opinions.put(instanceId, suspectMap.get(suspectedInstanceId)));
+			partitionDecisionMap.put(suspectedInstanceId, data);
+			return;
+		}
+
+		final boolean isNetworkcNotPartitioned = suspectMatrix.keySet().parallelStream()
+				.anyMatch(key -> !partitionDecisionData.opinions.get(key)
+						.equals(suspectMatrix.get(key).get(suspectedInstanceId)));
+
+		if (isNetworkcNotPartitioned) {
+			final PartitionDecisionData data = new PartitionDecisionData();
+			suspectMatrix.forEach(
+					(instanceId, suspectMap) -> data.opinions.put(instanceId, suspectMap.get(suspectedInstanceId)));
+			partitionDecisionMap.put(suspectedInstanceId, data);
+			return;
+		}
+
+		if (++partitionDecisionData.elapsedTimeCount >= tPartitionCount) {
+			logger.warn("Network partitioning detected. Instance with id " + suspectedInstanceId
+					+ " on other side of partition. Marking it as non-live!!");
+			liveMap.get(true).remove(suspectedInstanceId);
+			liveMap.get(false).add(suspectedInstanceId);
+			partitionDecisionMap.remove(suspectedInstanceId);
+		}
+
+		logGossipData("checkForNetworkPartitioning", "before-exit");
+	}
+
 	private void addInstanceToInstanceList(final Instance instance) {
 		instances.put(instance.getInstanceId(), instance);
 	}
 
 	private void logGossipData(String methodName, String methodReach) {
-		logger.info(methodName+"#"+methodReach+" -> Gossip Map: " + gossipMap);
-		logger.info(methodName+"#"+methodReach+" -> Suspect Map: " + suspectMap);
-		logger.info(methodName+"#"+methodReach+" -> Suspect Matrix: " + suspectMatrix);
-		logger.info(methodName+"#"+methodReach+" -> Live Map: " + liveMap);
+		logger.debug(methodName + "#" + methodReach + " -> Gossip Map: " + gossipMap);
+		logger.debug(methodName + "#" + methodReach + " -> Suspect Map: " + suspectMap);
+		logger.debug(methodName + "#" + methodReach + " -> Suspect Matrix: " + suspectMatrix);
+		logger.debug(methodName + "#" + methodReach + " -> Live Map: " + liveMap);
+	}
+
+	private class PartitionDecisionData {
+		private int elapsedTimeCount;
+		private Map<InstanceId, Boolean> opinions;
+
+		private PartitionDecisionData() {
+			elapsedTimeCount = 0;
+			opinions = new ConcurrentHashMap<>(53);
+		}
 	}
 }

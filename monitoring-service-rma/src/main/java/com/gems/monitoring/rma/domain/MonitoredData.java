@@ -1,8 +1,10 @@
-package com.gems.monitoring.domain;
+package com.gems.monitoring.rma.domain;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.gems.monitoring.domain.InstanceId;
 
 public class MonitoredData implements Serializable {
 

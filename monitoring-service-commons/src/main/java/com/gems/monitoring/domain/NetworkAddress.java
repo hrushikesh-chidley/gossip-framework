@@ -1,4 +1,4 @@
-package com.gems.monitoring.net;
+package com.gems.monitoring.domain;
 
 import java.io.Serializable;
 

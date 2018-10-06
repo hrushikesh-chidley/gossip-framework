@@ -1,27 +1,27 @@
 package com.gems.monitoring.ga;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gems.monitoring.domain.Configurations;
-import com.gems.monitoring.domain.GossipMessage;
+import com.gems.monitoring.config.Configurations;
 import com.gems.monitoring.domain.Instance;
-import com.gems.monitoring.domain.InstanceEnquiryRequest;
-import com.gems.monitoring.domain.InstanceEnquiryResponse;
 import com.gems.monitoring.domain.InstanceId;
-import com.gems.monitoring.domain.MonitoredData;
 import com.gems.monitoring.error.MonitoringServiceException;
 import com.gems.monitoring.function.GossipAgent;
-import com.gems.monitoring.function.ResourceMonitoringAgent;
+import com.gems.monitoring.function.GossipMessagePayloadAgent;
+import com.gems.monitoring.message.GossipMessage;
+import com.gems.monitoring.message.InstanceEnquiryRequest;
+import com.gems.monitoring.message.InstanceEnquiryResponse;
 import com.gems.monitoring.net.NetworkProxy;
 
 public class GossipAgentImpl implements GossipAgent {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-	private ResourceMonitoringAgent resourceMonitoringAgent;
 
 	private InstanceId ownInstanceId;
 	private NetworkProxy network;
@@ -51,11 +51,6 @@ public class GossipAgentImpl implements GossipAgent {
 	}
 
 	@Override
-	public void registerResourceMonitoringAgent(final ResourceMonitoringAgent resourceMonitoringAgent) {
-		this.resourceMonitoringAgent = resourceMonitoringAgent;
-	}
-
-	@Override
 	public void processReceivedGossipMessage(final GossipMessage message) throws MonitoringServiceException {
 		logger.debug("Received Gossip Message. "+message);
 		final GossipData gossipData = GossipData.getInstance();
@@ -68,8 +63,12 @@ public class GossipAgentImpl implements GossipAgent {
 			network.sendToDestination(messageToSend, message.getSourceAddress());
 		}
 		
-		message.getMonitoringData().ifPresent(monitoringData -> resourceMonitoringAgent.submitReceivedMonitoringData(monitoringData));
-
+		message.getPayloadData().forEach((agentId, payloadData) -> {
+			final GossipMessagePayloadAgent<? extends Serializable> gossipMessagePayloadAgent = payloadAgents.get(agentId);
+			if(gossipMessagePayloadAgent != null) {
+				gossipMessagePayloadAgent.submitReceivedPayloadData(payloadData);
+			}
+		});
 	}
 
 	@Override
@@ -105,14 +104,69 @@ public class GossipAgentImpl implements GossipAgent {
 	}
 	
 	private GossipMessage createGossipMessageToSend() {
-		final MonitoredData monitoringData = resourceMonitoringAgent.getMonitoredDataForInstance(ownInstanceId);
-		GossipData gossipData = GossipData.getInstance();
-
+		final GossipData gossipData = GossipData.getInstance();
 		final GossipMessage gossipMessage = new GossipMessage(ownInstanceId, gossipData.getGossipMapToSend(), gossipData.getSuspectMatrixToSend(),
-				network.getSelfNetworkAddress(), monitoringData);
+				network.getSelfNetworkAddress());
+		payloadAgents.forEach( (agentId, agent) -> {
+			gossipMessage.addPayloadData(agentId, agent.getPayloadDataForInstance(ownInstanceId));
+		});
+		
 		logger.debug("Gossip message created : "+gossipMessage);
 		return gossipMessage;
 	}
+	
+	/*
+	private void printMonitoringDataRegularly() {
+		final Runnable monitoringJob = () -> {
+			final StringBuffer buffer = new StringBuffer();
+			
+			final GossipData gossipData = GossipData.getInstance();
+			final Set<InstanceId> liveInstances = gossipData.getLiveMap().get(true);
+			final Set<InstanceId> downInstances = gossipData.getLiveMap().get(false);
+			
+			buffer.append("\n{");
+			buffer.append("\n\t\"live-instances\": \"");
+			final String liveInstanceList = String.join(", ", liveInstances.parallelStream()
+					.map(instanceId -> instanceId.toString()).collect(Collectors.toList()));
+			
+			buffer.append(liveInstanceList+"\",");
+			buffer.append("\n\t\"down-instances\": \"");
+			final String downInstanceList = String.join(", ", downInstances.parallelStream()
+					.map(instanceId -> instanceId.toString()).collect(Collectors.toList()));
+			
+			buffer.append(downInstanceList+"\",");
+			
+			liveInstances.forEach(instanceId -> {
+				final MonitoredData monitoredData = resourceMonitoringAgent.getMonitoredDataForInstance(instanceId);
+				
+				buffer.append("\n\t{");
+				buffer.append("\n\t\t\"instance-id\" : \""+monitoredData.getInstanceId()+"\",");
+				buffer.append("\n\t\t\"monitoring-data\" : {\n\t\t\t");
+				
+				String monitoringData = String.join(",\n\t\t\t",
+						monitoredData.getMonitoredData().parallelStream()
+								.map(data -> data.getResourceName() + "\" : \"" + data.getCurrentValue() + "\"")
+								.collect(Collectors.toList()));
+				buffer.append(monitoringData);
+
+				buffer.append("\n\t\t}");
+				buffer.append("\n\t}");
+			});
+			buffer.append("\n}");
+			logger.info(buffer.toString());
+		};
+		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(monitoringJob, 10, 10, TimeUnit.SECONDS);
+	}
+	*/
+
+	@Override
+	public void registerMessagePayloadAgent( final 
+			GossipMessagePayloadAgent<? extends Serializable> gossipMessagePayloadAgent) {
+		payloadAgents.put(gossipMessagePayloadAgent.getClass().getName(), gossipMessagePayloadAgent);
+		
+	}
+	
+	private final Map<String, GossipMessagePayloadAgent<? extends Serializable>> payloadAgents = new ConcurrentHashMap<>(5);
 
 
 }
