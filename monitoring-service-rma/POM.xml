@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>monitoring-service-commons</artifactId>
+			<artifactId>monitoring-service-ga</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

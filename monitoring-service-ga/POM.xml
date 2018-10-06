@@ -11,12 +11,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>monitoring-service-ga</artifactId>
 	<packaging>jar</packaging>
-
+	
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>monitoring-service-commons</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
 
