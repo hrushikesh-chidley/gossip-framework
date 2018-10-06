@@ -9,8 +9,8 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>monitoring-service-ga</module>
-		<module>monitoring-service-rma</module>
+		<module>gossip-core</module>
+		<module>monitoring-extension</module>
 	</modules>
 
 	<properties>
