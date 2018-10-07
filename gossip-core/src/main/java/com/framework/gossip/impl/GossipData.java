@@ -60,6 +60,16 @@ public class GossipData {
 		}
 	}
 
+	/**
+	 * This method iterates over the GossipMap and for each instance id key in this map, 
+	 * it increments the count of gossip delay time period, except for it's own instance id. This operation
+	 * maintains the time (in form of multiple of gossip delay) that has passed since the last gossip message 
+	 * was received from each instance.
+	 * 
+	 * If any count is found to be equal to or more than Tcleanup, that instance is marked as suspected down. 
+	 * This method then calls {@link #buildConsensus(InstanceId)} passing this suspected instance id to check
+	 * if this suspected instance id is indeed ot be marked as down based on consensus from all other live instances.
+	 */
 	public final void updateForScheduledGossipTrigger() {
 		logGossipData("updateForScheduledGossipTrigger", "after-entry");
 		gossipMap.keySet().parallelStream().filter(instanceId -> !instanceId.equals(selfInstanceId))
@@ -77,6 +87,28 @@ public class GossipData {
 		logGossipData("updateForScheduledGossipTrigger", "before-exit");
 	}
 
+	/**
+	 * This method is called whenever a gossip message is received from some other instance 
+	 * in this instance. The data structure contained in the received gossip message i.e. 
+	 * Gossip Map and Suspect Matrix are passed as argument to this method.
+	 * 
+	 * This method checks for each entry in the received Gossip Map, if the local Gossip Map has the entry
+	 * of this same instance id. If the entry exists and if the count against this entry in received map
+	 * is less than the count in local map, the local map is updated. 
+	 * If after such update, the count is lower than the Tcleanup, then suspect on the instance is removed 
+	 * by updating local Suspect Map and associated entry in Suspect Matrix.
+	 * For all the instances where the local Gossip Map was updated, the local Suspect Matrix is also updated to
+	 * contain the entries for these instances from received Suspect Matrix.
+	 * 
+	 * If any instance does not exists in the local Gossip Map, the entry is made in the local Gossip Map, Suspect Map and
+	 * Suspect Matrix. And InstanceListEnquiry message is marked to be sent to instance from which gossip message was
+	 * received.
+	 * 
+	 * 
+	 * @param receivedGossipMap the received Gossip Map in the gossip message
+	 * @param receivedSuspectMatrix the received Suspect Matrix in the gossip message
+	 * @return true if the received Gossip Map contains some entry which was not existing locally, false otherwise
+	 */
 	public final boolean compareGossipMaps(final Map<InstanceId, Integer> receivedGossipMap,
 			final Map<InstanceId, Map<InstanceId, Boolean>> receivedSuspectMatrix) {
 		logGossipData("compareGossipMaps", "after-entry");
@@ -96,19 +128,21 @@ public class GossipData {
 				if (waitCount < gossipMap.get(instanceId)) {
 					logger.debug("Lower wait counts detected. Updating local Gossip Map!!");
 					gossipMap.replace(instanceId, waitCount);
-					if (waitCount < tCleanupCount) {
-						logger.debug("Removing suspicion on the instance " + instanceId);
-						suspectMap.replace(instanceId, false);
-					}
 					logger.debug("Updating local Suspect Matrix for instance " + instanceId
 							+ " based on value in received Suspect Matrix");
 					suspectMatrix.replace(instanceId, receivedSuspectMatrix.get(instanceId));
+					if (waitCount < tCleanupCount && suspectMap.get(instanceId)) {
+						logger.debug("Removing suspicion on the instance " + instanceId);
+						suspectMap.replace(instanceId, false);
+						suspectMatrix.replace(selfInstanceId, suspectMap);
+					}
 				}
 				logger.debug("The wait count check completed");
 			} else {
 				logger.debug("This entry does not exist locally. Inserting in local Gossip Map!!");
 				gossipMap.put(instanceId, waitCount);
 				suspectMap.put(instanceId, false);
+				suspectMatrix.put(selfInstanceId, suspectMap);
 				suspectMatrix.put(instanceId, receivedSuspectMatrix.get(instanceId));
 				doEnquireInstanceList = true;
 			}
@@ -180,6 +214,23 @@ public class GossipData {
 		return liveMap;
 	}
 
+	/**
+	 * This method builds the consensus on the liveness of the instance which is suspected to be down.
+	 * <p>
+	 * 
+	 * This consensus building algorithm first filters the live instance which shall be part of consensus 
+	 * forming exercise and then finds the count among such instances for number of instances which also 
+	 * suspect currently suspected instance.
+	 * 
+	 * If the number of such instances is equal to or more than half of total instances, then the suspected
+	 * instance is removed from consensus building algorithm for future iterations. If however all the live 
+	 * instances agree on suspicion, then the suspected instance is marked as down.
+	 * 
+	 * This method also checks for network partitioning in cases where number of instances suspecting the
+	 * down status is less than half of total instances forming consensus. 
+	 * 
+	 * @param suspectedInstanceId the suspected instance about which consensus is to be built
+	 */
 	private void buildConsensus(final InstanceId suspectedInstanceId) {
 		logGossipData("buildConsensus", "after-entry");
 		final Set<InstanceId> liveInstances = liveMap.get(true);
