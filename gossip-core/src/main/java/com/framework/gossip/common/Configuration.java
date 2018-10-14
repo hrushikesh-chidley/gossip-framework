@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.framework.gossip.domain.InstanceId;
 
-public class Configurations {
+public class Configuration {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -19,7 +19,7 @@ public class Configurations {
 	private int tCleanupCount;
 	private int tPartitionCount;
 
-	public Configurations() {
+	public Configuration() {
 		super();
 	}
 

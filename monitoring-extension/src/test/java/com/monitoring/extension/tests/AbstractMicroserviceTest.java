@@ -1,11 +1,12 @@
 package com.monitoring.extension.tests;
 
+import java.time.ZonedDateTime;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.framework.gossip.GossipAgent;
-import com.framework.gossip.common.Configurations;
+import com.framework.gossip.common.Configuration;
 import com.framework.gossip.domain.InstanceId;
 import com.framework.gossip.domain.InstancesInfo;
 import com.framework.gossip.error.GossipException;
@@ -16,13 +17,13 @@ import com.monitoring.extension.domain.MonitoredData;
 public class AbstractMicroserviceTest {
 
 	protected void startMicroservice( final String instanceId, final int port) throws GossipException {
-		final Configurations config = new Configurations();
+		final Configuration config = new Configuration();
 
 		config.setInstanceId(instanceId);
 		config.setBroadcastIP("192.168.1.255");
 		config.setLocalPort(port);
-		config.setGossipDelay(200);
-		config.setCleanupCount(15);
+		config.setGossipDelay(100);
+		config.setCleanupCount(10);
 		config.setPartitionCount(200);
 
 		final GossipAgent gossipAgent = new GossipAgentImpl();
@@ -39,6 +40,7 @@ public class AbstractMicroserviceTest {
 				if (input.equalsIgnoreCase("p")) {
 					printMonitoringData(gossipAgent, resourceMonitorinAgent);
 				} else if (input.equalsIgnoreCase("e")) {
+					System.out.println(ZonedDateTime.now()+ ": Exiting!");
 					System.exit(0);
 				} else {
 					System.out.println("Invalid input!");

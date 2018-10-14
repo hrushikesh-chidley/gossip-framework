@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.framework.gossip.GossipAgent;
 import com.framework.gossip.GossipMessagePayloadAgent;
-import com.framework.gossip.common.Configurations;
+import com.framework.gossip.common.Configuration;
 import com.framework.gossip.domain.Instance;
 import com.framework.gossip.domain.InstanceId;
 import com.framework.gossip.domain.InstancesInfo;
@@ -44,7 +44,7 @@ public class GossipAgentImpl implements GossipAgent {
 	private int tCleanupCount;
 
 	@Override
-	public final void initialize(final Configurations config) throws GossipException {
+	public final void initialize(final Configuration config) throws GossipException {
 		config.validateConfigComplete();
 		logger.debug("Initializing the Gossip Agent with configurations : " + config);
 		tGossip = config.getGossipDelay();

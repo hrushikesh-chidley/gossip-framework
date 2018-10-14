@@ -11,6 +11,7 @@
 	<modules>
 		<module>gossip-core</module>
 		<module>monitoring-extension</module>
+		<module>monitoring-extension-test</module>
 	</modules>
 
 	<properties>

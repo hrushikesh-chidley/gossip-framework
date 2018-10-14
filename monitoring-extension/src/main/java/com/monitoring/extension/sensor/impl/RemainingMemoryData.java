@@ -1,5 +1,7 @@
 package com.monitoring.extension.sensor.impl;
 
+import com.monitoring.extension.sensor.AbstractResourceData;
+
 public class RemainingMemoryData extends AbstractResourceData<String>{
 
 	private static final long serialVersionUID = 6216327093587873378L;

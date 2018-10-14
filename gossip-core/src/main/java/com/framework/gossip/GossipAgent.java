@@ -2,7 +2,7 @@ package com.framework.gossip;
 
 import java.io.Serializable;
 
-import com.framework.gossip.common.Configurations;
+import com.framework.gossip.common.Configuration;
 import com.framework.gossip.domain.Instance;
 import com.framework.gossip.domain.InstancesInfo;
 import com.framework.gossip.error.GossipException;
@@ -32,28 +32,28 @@ public interface GossipAgent {
 	 * 
 	 * This method shall be called to initialize this GossipAgent for receiving
 	 * and/or sending the gossip message. This method initializes all other
-	 * components of the Gossip Framework based on the {@link Configurations}
+	 * components of the Gossip Framework based on the {@link Configuration}
 	 * provided.
 	 *
 	 * <br>
 	 * Specifically, following steps are performed in the sequence given
 	 * 
 	 * <ul>
-	 * <li>Acquire a unique instance id for itself based on {@link Configurations#getInstanceId()}</li>
+	 * <li>Acquire a unique instance id for itself based on {@link Configuration#getInstanceId()}</li>
 	 * <li>Initialize an empty ‘Instance List’</li>
 	 * <li>Insert its own instance id in ‘Gossip Map’ with value 0, in ‘Suspect Map’ with value 'FALSE' and in ‘Live Map’ 
 	 * with value 'TRUE'</li>
 	 * <li>Create ‘Suspect Matrix’ using its own ‘Suspect Map’</li>
-	 * <li>Create a UDP socket on the port provided in {@link Configurations#getLocalPort()} to listen to gossip messages</li>
+	 * <li>Create a UDP socket on the port provided in {@link Configuration#getLocalPort()} to listen to gossip messages</li>
 	 * <li>Broadcast the IP and port on which gossip messages can be listened alognwith its instance id over network</li>
-	 * <li>Start a scheduler thread which is invoked after every {@link Configurations#getGossipDelay()} time period</li>
+	 * <li>Start a scheduler thread which is invoked after every {@link Configuration#getGossipDelay()} time period</li>
 	 * </ul>
 	 * 
 	 * @param config the configurations used to initialize this agent
 	 * @throws GossipException in case of any error during initialization
 	 */
 
-	void initialize(Configurations config) throws GossipException;
+	void initialize(Configuration config) throws GossipException;
 
 	/**
 	 * This method is called whenever the {@link GossipMessage} from some other
@@ -98,7 +98,7 @@ public interface GossipAgent {
 	 * <br>
 	 * <ol>
 	 * <li>If there are no live instances currently available for gossiping as per 'Live Map' maintained by this node and</li>
-	 * <li>If {@link Configurations#getGossipDelay()} * {@link Configurations#getCleanupCount()} milliseconds has passed since the last 
+	 * <li>If {@link Configuration#getGossipDelay()} * {@link Configuration#getCleanupCount()} milliseconds has passed since the last 
 	 * broadcast message was sent</li>
 	 * </ol>
 	 * 
@@ -120,13 +120,9 @@ public interface GossipAgent {
 	 * it's own instance id for each registered payload agent. The values returned by these calls are added as piggybacking payload on outgoing 
 	 * Gossip Message before it is sent on network. 
 	 * 
-	 * This method may not wait indefinitely for the payload data to be returned by agent. It is advised that agents cache their data instead of 
-	 * returning it during runtime.
 	 * 
 	 * Additionally, this Gossip Agent calls {@link GossipMessagePayloadAgent#submitReceivedPayloadData(Serializable)} for each associated payload agent
 	 * when it receives the gossip message containing the payload. 
-	 * 
-	 * The GossipAgent is not responsible if the data in the payload is corrupted.  
 	 * 
 	 * @param gossipMessagePayloadAgent the agent to be registered 
 	 */

@@ -1,4 +1,4 @@
-package com.monitoring.extension.sensor.impl;
+package com.monitoring.extension.sensor;
 
 import java.io.Serializable;
 

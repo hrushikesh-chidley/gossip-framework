@@ -1,9 +1,7 @@
 package com.monitoring.extension.datastore.impl;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.framework.gossip.domain.InstanceId;
 import com.monitoring.extension.datastore.MonitoringDataStore;
@@ -26,12 +24,4 @@ public class InMemoryDataStore implements MonitoringDataStore {
 		final MonitoredData data = dataStore.get(instanceId);
 		return data == null ?  emptyData : data;
 	}
-
-	@Override
-	public final Set<MonitoredData> retrieveCompleteMonitoringData() {
-		final Set<MonitoredData> monitoredData = new HashSet<>(500);
-		dataStore.keySet().forEach(instanceId -> monitoredData.add(dataStore.get(instanceId)));
-		return monitoredData;
-	}
-
 }

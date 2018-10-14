@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.framework.gossip.GossipMessagePayloadAgent;
-import com.framework.gossip.common.Configurations;
+import com.framework.gossip.common.Configuration;
 import com.framework.gossip.domain.InstanceId;
 import com.monitoring.extension.datastore.MonitoringDataStore;
 import com.monitoring.extension.datastore.impl.InMemoryDataStore;
@@ -19,7 +19,7 @@ public class ResourceMonitoringAgentImpl implements GossipMessagePayloadAgent<Mo
 
 	private final MonitoringDataStore dataStore = new InMemoryDataStore();
 	
-	public void initialize(final Configurations config) {
+	public void initialize(final Configuration config) {
 		logger.debug("Initializing the Resource Monitoring Agent with Configuration "+config);
 		final ResourceCheckScheduler scheduler = new ResourceCheckScheduler();
 		scheduler.scheduleResourceCheck(config.getInstanceId(), dataStore);

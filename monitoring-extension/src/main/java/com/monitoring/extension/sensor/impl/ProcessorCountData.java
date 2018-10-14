@@ -1,5 +1,7 @@
 package com.monitoring.extension.sensor.impl;
 
+import com.monitoring.extension.sensor.AbstractResourceData;
+
 public class ProcessorCountData extends AbstractResourceData<Long>{
 
 	private static final long serialVersionUID = -6282201639683639612L;

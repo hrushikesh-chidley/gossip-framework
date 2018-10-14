@@ -7,8 +7,6 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import com.monitoring.extension.sensor.impl.AbstractResourceSensor;
-
 @SuppressWarnings("rawtypes")
 public class Sensors {
 	
