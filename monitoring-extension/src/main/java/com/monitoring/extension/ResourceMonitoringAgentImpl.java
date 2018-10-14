@@ -19,6 +19,7 @@ public class ResourceMonitoringAgentImpl implements GossipMessagePayloadAgent<Mo
 
 	private final MonitoringDataStore dataStore = new InMemoryDataStore();
 	
+	@Override
 	public void initialize(final Configuration config) {
 		logger.debug("Initializing the Resource Monitoring Agent with Configuration "+config);
 		final ResourceCheckScheduler scheduler = new ResourceCheckScheduler();

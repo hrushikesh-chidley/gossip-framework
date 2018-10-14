@@ -2,10 +2,13 @@ package com.framework.gossip;
 
 import java.io.Serializable;
 
+import com.framework.gossip.common.Configuration;
 import com.framework.gossip.domain.InstanceId;
 
 public interface GossipMessagePayloadAgent<Payload extends Serializable> {
 
+	void initialize(Configuration config);
+	
 	/**
 	 * The method is called by gossip agent to collect the payload data to be sent
 	 * as piggybacking data on outgoing gossip message.
