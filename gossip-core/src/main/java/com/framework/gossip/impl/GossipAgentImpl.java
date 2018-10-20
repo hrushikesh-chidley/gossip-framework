@@ -24,7 +24,7 @@ import com.framework.gossip.error.GossipException;
 import com.framework.gossip.message.GossipMessage;
 import com.framework.gossip.message.InstanceEnquiryRequest;
 import com.framework.gossip.message.InstanceEnquiryResponse;
-import com.framework.gossip.network.NetworkProxy;
+import com.framework.gossip.network.NetworkAdapter;
 
 public class GossipAgentImpl implements GossipAgent {
 
@@ -36,7 +36,7 @@ public class GossipAgentImpl implements GossipAgent {
 			5);
 
 	private InstanceId ownInstanceId;
-	private NetworkProxy network;
+	private NetworkAdapter network;
 
 	private long lastBroadcastTime;
 
@@ -53,7 +53,7 @@ public class GossipAgentImpl implements GossipAgent {
 		ownInstanceId = config.getInstanceId();
 		GossipData.initialize(ownInstanceId, config.getCleanupCount(), config.getPartitionCount());
 
-		network = NetworkProxy.getInstance(config.getBasePort(), config.getLocalPort(), config.getBroadcastIP());
+		network = NetworkAdapter.getInstance(config.getBasePort(), config.getLocalPort(), config.getBroadcastIP());
 		network.registerForGossipMessage(this);
 		final GossipScheduler gossipScheduler = new GossipScheduler(this);
 

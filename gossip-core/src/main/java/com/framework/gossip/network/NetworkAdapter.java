@@ -28,7 +28,7 @@ import com.framework.gossip.message.InstanceEnquiryRequest;
 import com.framework.gossip.message.InstanceEnquiryResponse;
 import com.framework.gossip.message.Message;
 
-public final class NetworkProxy {
+public final class NetworkAdapter {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,9 +45,9 @@ public final class NetworkProxy {
 
 	private MessagePartAggregator messageAggregator;
 
-	private volatile static NetworkProxy network;
+	private volatile static NetworkAdapter network;
 
-	private NetworkProxy(final int basePort, final int localPort, final String broadcastIP)
+	private NetworkAdapter(final int basePort, final int localPort, final String broadcastIP)
 			throws GossipException {
 		this.basePort = basePort;
 		this.localPort = localPort;
@@ -60,12 +60,12 @@ public final class NetworkProxy {
 		startUDPListening();
 	}
 
-	public static final NetworkProxy getInstance(final int basePort, final int localPort, final String broadcastIP)
+	public static final NetworkAdapter getInstance(final int basePort, final int localPort, final String broadcastIP)
 			throws GossipException {
 		if (network == null) {
-			synchronized (NetworkProxy.class) {
+			synchronized (NetworkAdapter.class) {
 				if (network == null) {
-					network = new NetworkProxy(basePort, localPort, broadcastIP);
+					network = new NetworkAdapter(basePort, localPort, broadcastIP);
 					network.messageAggregator = MessagePartAggregator.initialize();
 				}
 			}
