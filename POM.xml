@@ -1,51 +1,112 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.framework.gossip</groupId>
-	<artifactId>gossip-main</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.framework.gossip</groupId>
+    <artifactId>gossip-main</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<modules>
-		<module>gossip-core</module>
-		<module>monitoring-extension</module>
-		<module>monitoring-extension-test</module>
-	</modules>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A Reference implementation for Gossip Framework with Monitoring Extension</description>
+    <url>https://github.com/hrushikesh-chidley/gossip-framework</url>
 
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<reflections.version>0.9.11</reflections.version>
-		<slf4j-api.version>1.7.25</slf4j-api.version>
-	</properties>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.reflections</groupId>
-				<artifactId>reflections</artifactId>
-				<version>${reflections.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j-api.version}</version>
-			</dependency>
+    <developers>
+        <developer>
+            <name>Hrushikesh Chidley</name>
+            <email>hrushikesh.chidley@gmail.com</email>
+            <organizationUrl>https://github.com/hrushikesh-chidley</organizationUrl>
+        </developer>
+    </developers>
 
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
+    <scm>
+        <connection>scm:git:git://github.com/hrushikesh-chidley/gossip-framework.git</connection>
+        <developerConnection>scm:git:ssh://github.com/hrushikesh-chidley/gossip-framework.git</developerConnection>
+        <url>http://github.com/hrushikesh-chidley/gossip-framework/tree/master</url>
+    </scm>
 
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <modules>
+        <module>gossip-core</module>
+        <module>monitoring-extension</module>
+        <module>monitoring-extension-test</module>
+    </modules>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <reflections.version>0.9.11</reflections.version>
+        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <maven-javadoc-plugin.version>2.7</maven-javadoc-plugin.version>
+        <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
+    </properties>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${reflections.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadoc</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-source</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+    </build>
 </project>

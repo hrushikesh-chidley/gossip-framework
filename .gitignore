@@ -3,6 +3,7 @@ target
 .project
 .settings/*
 .classpath
+.idea/*
 
 gossip-core/target/*
 gossip-core/.project
@@ -14,3 +15,7 @@ monitoring-extension/.project
 monitoring-extension/.settings/*
 monitoring-extension/.classpath
 
+monitoring-extension-test/target/*
+monitoring-extension-test/.project
+monitoring-extension-test/.settings/*
+monitoring-extension-test/.classpath
